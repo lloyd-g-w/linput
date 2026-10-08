@@ -40,6 +40,8 @@ for browser in chrome firefox; do
   mkdir -p "dist/$browser"
   cp extension/options.html extension/options.css extension/demo.html "dist/$browser/"
   cp "extension/manifest.$browser.json" "dist/$browser/manifest.json"
+  mkdir -p "dist/$browser/icons"
+  install -m 644 extension/icons/icon-*.png "dist/$browser/icons/"
   install -m 644 _build/fengari.js "dist/$browser/fengari.js"
   install -m 644 _build/editor.js "dist/$browser/editor.js"
   install -m 644 node_modules/@codemirror/view/LICENSE "dist/$browser/CODEMIRROR-LICENSE.txt"

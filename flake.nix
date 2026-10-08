@@ -118,6 +118,20 @@
             platforms = lib.platforms.unix;
           };
         };
+        chromeZip =
+          pkgs.runCommand "linput-chrome-zip-${extension.version}" { nativeBuildInputs = [ pkgs.zip ]; }
+            ''
+              export LC_ALL=C TZ=UTC
+              mkdir -p "$out"
+              cp -r ${extension}/chrome staging
+              cd staging
+              find . -type d -exec chmod 755 {} +
+              find . -type f -exec chmod 644 {} +
+              # ZIP's DOS timestamp starts in 1980; normalize permissions, order and
+              # timestamps, and omit host-specific extra fields for reproducibility.
+              find . -exec touch -t 198001010000.00 {} +
+              find . -type f -printf '%P\n' | sort | zip -X -q "$out/linput-chrome.zip" -@
+            '';
         browserPackage =
           browser:
           pkgs.runCommand "linput-${browser}" { } ''
@@ -129,11 +143,16 @@
         packages = {
           default = extension;
           inherit extension;
+          chrome-zip = chromeZip;
           chrome = browserPackage "chrome";
           firefox = browserPackage "firefox";
         };
         checks = {
           build-and-tests = extension;
+          chrome-zip = pkgs.runCommand "linput-chrome-zip-check" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+            python3 ${./tests/chrome_zip.py} ${chromeZip}/linput-chrome.zip ${extension}/chrome
+            touch "$out"
+          '';
           manifests = pkgs.runCommand "linput-manifest-check" { nativeBuildInputs = [ pkgs.nodejs ]; } ''
             node ${./tests/manifests.cjs} ${extension}
             touch "$out"
@@ -147,6 +166,7 @@
             pkgs.ripgrep
             pkgs.which
             pkgs.prefetch-npm-deps
+            pkgs.librsvg
           ]
           ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.chromium ];
           shellHook = ''

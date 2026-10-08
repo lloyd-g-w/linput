@@ -3,6 +3,12 @@
   "name": "Linput",
   "version": "0.3.0",
   "description": "Run reusable item-loop workflows on page inputs.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "permissions": ["storage", "contextMenus"],
   "background": {
     "scripts": ["background.js"]
@@ -21,7 +27,13 @@
     "open_in_tab": true
   },
   "action": {
-    "default_title": "Linput workflows"
+    "default_title": "Linput workflows",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
   },
   "browser_specific_settings": {
     "gecko": {

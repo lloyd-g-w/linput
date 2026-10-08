@@ -9,6 +9,15 @@ for (const browser of ['chrome', 'firefox']) {
   assert.equal(manifest.manifest_version, 3);
   assert.equal(manifest.name, 'Linput');
   assert.deepEqual(manifest.permissions, ['storage', 'contextMenus']);
+  assert.deepEqual(manifest.action.default_icon, manifest.icons);
+  assert.deepEqual(Object.keys(manifest.icons), ['16', '32', '48', '128']);
+  for (const [size, file] of Object.entries(manifest.icons)) {
+    const png = fs.readFileSync(path.join(dir, file));
+    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', `${browser}: ${file} is not PNG`);
+    assert.equal(png.subarray(12, 16).toString(), 'IHDR');
+    assert.equal(png.readUInt32BE(16), Number(size), `${browser}: wrong icon width`);
+    assert.equal(png.readUInt32BE(20), Number(size), `${browser}: wrong icon height`);
+  }
   const scripts = [
     ...(manifest.background.scripts || [manifest.background.service_worker]),
     ...manifest.content_scripts.flatMap(entry => entry.js),
