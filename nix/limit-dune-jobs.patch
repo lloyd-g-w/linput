@@ -1,0 +1,45 @@
+--- a/Makefile.common-ox	2026-09-23 19:11:18.448949760 +0800
++++ b/Makefile.common-ox	2026-09-23 19:11:18.450335447 +0800
+@@ -6,6 +6,17 @@
+ ws_runstd = --root=. --workspace=duneconf/runtime_stdlib.ws
+ ws_main   = --root=. --workspace=duneconf/main.ws
+ 
++# dune auto-detects parallelism from the CPU count and ignores `make -j`, so
++# building the compiler can spawn one ~2 GB ocamlopt per core and get OOM-killed
++# on machines with little RAM, and the bootstrap has failed at high -j. Default
++# to min(cores, RAM / 2 GB, 4); overridable.
++JOBS ?= $(shell n=$$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 1); \
++  m=$$(awk '/MemTotal/ { print int($$2 / 2097152) }' /proc/meminfo 2>/dev/null); \
++  if [ -z "$$m" ]; then m=$$(sysctl -n hw.memsize 2>/dev/null | awk '{ print int($$1 / 2147483648) }'); fi; \
++  if [ -n "$$m" ] && [ "$$m" -lt "$$n" ]; then n=$$m; fi; \
++  if [ "$$n" -gt 4 ]; then n=4; fi; \
++  if [ "$$n" -lt 1 ]; then n=1; fi; echo $$n)
++
+ ifeq ($(coverage),yes)
+   coverage_dune_flags=--instrument-with bisect_ppx
+   ocaml_subdirs_to_ignore=otherlibs
+@@ -81,13 +86,13 @@
+   ocamltest/ocamltest.native
+ 
+ boot-compiler: _build/_bootinstall
+-	RUNTIME_DIR=$(RUNTIME_DIR) $(dune) build $(ws_boot) $(coverage_dune_flags) $(boot_targets)
++	RUNTIME_DIR=$(RUNTIME_DIR) $(dune) build -j $(JOBS) $(ws_boot) $(coverage_dune_flags) $(boot_targets)
+ 
+ boot-runtest: boot-compiler
+ 	RUNTIME_DIR=$(RUNTIME_DIR) $(dune) runtest $(ws_boot) $(coverage_dune_flags) --force
+ 
+ runtime-stdlib: boot-compiler
+-	RUNTIME_DIR=$(RUNTIME_DIR) $(dune) build $(ws_runstd) --only-package=ocaml_runtime_stdlib @install
++	RUNTIME_DIR=$(RUNTIME_DIR) $(dune) build -j $(JOBS) $(ws_runstd) --only-package=ocaml_runtime_stdlib @install
+ 	rm -rf _build/runtime_stdlib_install
+ # Dune 3.11+ clears `_build/install` before building, move the runtime stdlib
+ # to a separate directory.
+@@ -106,7 +111,7 @@
+ compiler: runtime-stdlib
+ 	RUNTIME_DIR=$(RUNTIME_DIR) SYSTEM=$(SYSTEM) MODEL=$(MODEL) \
+           ASPP="$(ASPP)" ASPPFLAGS="$(ASPPFLAGS)" \
+-          $(dune) build $(ws_main) \
++          $(dune) build -j $(JOBS) $(ws_main) \
+           --only-package=ocaml @install \
+           tools/regalloc/regalloc.exe \
+           oxcaml/testsuite/tools/expect.exe \

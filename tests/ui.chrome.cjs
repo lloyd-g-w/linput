@@ -10,7 +10,7 @@ const assert = require('node:assert/strict');
 (async () => {
   const before = process.argv.includes('--before');
   const profile = mkdtempSync(path.join(tmpdir(), 'linput-ui-'));
-  const extension = path.resolve('dist/chrome');
+  const extension = path.resolve(process.env.LINPUT_EXTENSION_DIR || 'dist/chrome');
   mkdirSync('screenshots', {recursive: true});
   let context;
   try {

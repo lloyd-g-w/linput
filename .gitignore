@@ -39,3 +39,7 @@ _opam/
 dist/
 node_modules/
 screenshots/
+
+# Nix build result links
+/result
+/result-*

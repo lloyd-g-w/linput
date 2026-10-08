@@ -8,7 +8,7 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 
 (async () => {
-  const extension = path.resolve('dist/chrome');
+  const extension = path.resolve(process.env.LINPUT_EXTENSION_DIR || 'dist/chrome');
   const profile = mkdtempSync(path.join(tmpdir(), 'linput-smoke-'));
   const server = http.createServer((_, res) => {
     res.setHeader('Content-Type', 'text/html');

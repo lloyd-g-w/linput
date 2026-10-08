@@ -1,0 +1,2 @@
+# Unified-diff context has intentional leading/trailing whitespace.
+nix/*.patch -whitespace

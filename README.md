@@ -2,25 +2,61 @@
 
 A Chrome/Firefox extension written in **OxCaml**, compiled with the OxCaml-compatible `js_of_ocaml`. Right-click an editable field → **linput → workflow name** to run a saved Lua script. The editor and browser API remain OxCaml; the bundled **Fengari** interpreter executes Lua 5.3 locally without JavaScript evaluation.
 
-## Build
+## Build with Nix
 
-Uses your existing `~/.opam/5.2.0+ox` switch by default:
+```sh
+nix build
+# Outputs: result/chrome/ and result/firefox/
+
+nix build .#chrome -o result-chrome
+nix build .#firefox -o result-firefox
+nix flake check
+```
+
+The flake pins the OxCaml compiler, patched `js_of_ocaml`, Dune, Nixpkgs and opam repositories, following `prigh`'s toolchain setup. npm dependencies are fetched from `package-lock.json` using a fixed hash, then installed/bundled offline inside the Nix sandbox. Builds run the OCaml and DOM/API integration tests, and `nix flake check` also verifies the installed browser manifests and assets. No local opam switch, `node_modules`, or previously compiled files are used.
+
+The flake offers the same `prigh.cachix.org` binary cache as `prigh`. To explicitly accept its cache URL/public key:
+
+```sh
+nix build --accept-flake-config
+```
+
+Cache acceptance is optional; without it, missing toolchain packages build from source. The first uncached OxCaml build can take a while. Linux x86-64 is verified; other default flake systems are defined but unverified.
+
+### Develop with Nix
+
+```sh
+nix develop
+npm ci
+bash scripts/build.sh     # Outputs: dist/chrome/ and dist/firefox/
+npm test
+```
+
+The build script uses the active Nix OxCaml toolchain without replacing its library paths. If your login shell automatically runs `opam env`, enter a clean shell instead:
+
+```sh
+nix develop --ignore-environment --keep HOME --keep TERM \
+  --command bash --noprofile --norc
+```
+
+### Existing opam switch (optional)
+
+The same script can use your active OxCaml switch, or fall back to `~/.opam/5.2.0+ox` when no OxCaml compiler is on PATH:
 
 ```sh
 npm ci
 bash scripts/build.sh
-# Another switch prefix:
 OXCAML_SWITCH=/path/to/oxcaml/switch bash scripts/build.sh
 ```
 
-Dependencies: Node/npm, OxCaml, Dune ≥ 3.17, OxCaml-compatible `js_of_ocaml` ≥ 6. `npm ci` installs Fengari and the esbuild bundler; neither downloads anything at extension runtime. The dependencies have been installed in this desktop's existing OxCaml switch. For another machine, install `js_of_ocaml` using that switch's OxCaml opam repository.
+Dependencies for this non-Nix path: Node/npm, OxCaml, Dune ≥ 3.17, and OxCaml-compatible `js_of_ocaml` ≥ 6. All editor/Lua assets are bundled locally; nothing downloads at extension runtime.
 
-Output: `dist/chrome/` and `dist/firefox/`.
+When updating `package-lock.json`, update `npmDepsHash` in `flake.nix` with `prefetch-npm-deps package-lock.json` from the pinned Nixpkgs, or use Nix's reported fixed-output hash mismatch.
 
 ## Install
 
-- **Chrome/Chromium:** open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, select `dist/chrome`.
-- **Firefox:** open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, select `dist/firefox/manifest.json`. Temporary installs disappear on restart; permanent standard Firefox installation requires Mozilla signing. The port shares all OCaml sources, with only the manifest differing.
+- **Chrome/Chromium:** open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, select `result/chrome` after `nix build` (or `dist/chrome` for a development build).
+- **Firefox:** open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, select `result/firefox/manifest.json` (or `dist/firefox/manifest.json` for a development build). Temporary installs disappear on restart; permanent standard Firefox installation requires Mozilla signing. The port shares all OCaml sources, with only the manifest differing.
 
 Click the extension toolbar icon to manage workflows. Give a workflow a name, write Lua, and save. **The entire script runs once**; loops, variables, functions, conditions and tables are ordinary Lua:
 
@@ -120,6 +156,8 @@ Storage limit: 20 workflows and ~7 KB per workflow (name + script + JSON overhea
 ## Verify
 
 ```sh
+nix flake check            # reproducible build, OCaml/DOM tests, installed assets
+nix develop
 npm ci
 bash scripts/build.sh       # builds both bundles and runs pure OCaml tests
 npm test                    # DOM/API integration tests against compiled OCaml
@@ -147,3 +185,4 @@ Open `http://127.0.0.1:8000/demo.html` and try the example Lua workflow (`linput
 - `src/options.ml`: editor, sync, export/import and stop-all.
 - `extension/`: HTML/CSS, the two browser manifests, and the thin CodeMirror UI adapter.
 - `tests/ui.chrome.cjs`: real-browser editor checks and desktop/tablet/mobile screenshots (written to `screenshots/`).
+- `flake.nix`, `flake.lock`, `nix/`: pinned toolchain, cached npm dependencies, packages, checks and dev shell.

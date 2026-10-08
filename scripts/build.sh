@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-# Prefer the user's existing OxCaml switch, or set OXCAML_SWITCH to another prefix.
-switch="${OXCAML_SWITCH:-$HOME/.opam/5.2.0+ox}"
-export PATH="$switch/bin:$PATH"
-export OCAMLLIB="$switch/lib/ocaml"
-export CAML_LD_LIBRARY_PATH="$switch/lib/stublibs:$switch/lib/ocaml/stublibs"
+# Use the active OxCaml toolchain (including nix develop/build) without touching
+# its library paths. An explicit switch wins; the desktop switch is a fallback.
+activate_switch() {
+  local switch="$1"
+  if [[ ! -x "$switch/bin/ocamlc" ]]; then
+    echo "OxCaml not found. Use nix develop, or set OXCAML_SWITCH to a switch prefix." >&2
+    exit 1
+  fi
+  export PATH="$switch/bin:$PATH"
+  export OCAMLLIB="$switch/lib/ocaml"
+  export CAML_LD_LIBRARY_PATH="$switch/lib/stublibs:$switch/lib/ocaml/stublibs"
+}
+if [[ -n "${OXCAML_SWITCH:-}" ]]; then
+  activate_switch "$OXCAML_SWITCH"
+elif ! command -v ocamlc >/dev/null || [[ "$(ocamlc -version)" != *+ox* ]]; then
+  activate_switch "${HOME:-/nonexistent}/.opam/5.2.0+ox"
+fi
 if [[ "$(ocamlc -version)" != *+ox* ]]; then
-  echo "An OxCaml compiler is required. Set OXCAML_SWITCH to your switch prefix." >&2
+  echo "An OxCaml compiler is required. Use nix develop or set OXCAML_SWITCH." >&2
   exit 1
 fi
 if [[ ! -x node_modules/.bin/esbuild ]]; then
