@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linput — Practice page</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="page">
+    <header>
+      <p class="eyebrow">Linput playground</p>
+      <h1>A safe place to practice.</h1>
+      <p>This page needs no JavaScript. To test extension workflows, serve it over HTTP or HTTPS: the extension's content scripts do not run on local file URLs or extension pages.</p>
+    </header>
+    <section class="card" aria-labelledby="instructions-title">
+      <h2 id="instructions-title">Try a workflow</h2>
+      <ol>
+        <li>In Linput options, create a named workflow and replace its script with the Lua example below.</li>
+        <li>Save the workflow. Optionally use the separate list converter to prepare a different Lua table and insert it into your script.</li>
+        <li>Right-click a field below and choose your workflow from Linput's context menu.</li>
+      </ol>
+      <pre><code>local items = {"apple", "banana", "cherry"}
+for _, item in ipairs(items) do
+  linput.type(item)
+  linput.delay(1000)
+end</code></pre>
+      <p>The entire script runs once; the explicit loop replaces the target's value for each item, ending with <code>cherry</code>. Try <code>linput.tab()</code> to move between fields or <code>linput.focus("#demo-notes")</code> to choose the notes field. <code>linput.click("#demo-notes")</code> can also change the target.</p>
+      <p class="hint">Synthetic Enter is not accepted by every site. <code>linput.submit()</code> may submit this form and reload the page. Press Escape or use Stop all workflows in options to cancel a run, and check the status there.</p>
+    </section>
+    <section class="card" aria-labelledby="form-title">
+      <h2 id="form-title">Practice form</h2>
+      <form action="demo.html" method="get">
+        <label for="demo-input">Single-line text</label>
+        <input id="demo-input" name="text" type="text" placeholder="Choose this target first" autocomplete="off">
+        <label for="demo-notes">Notes</label>
+        <textarea id="demo-notes" name="notes" rows="5" placeholder="Try a multiline target"></textarea>
+        <p id="editable-label">Editable text area</p>
+        <div id="demo-editable" class="editable" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="editable-label" aria-describedby="editable-help" tabindex="0"></div>
+        <p id="editable-help" class="hint">This contenteditable region is editable but is not included in the submitted form data.</p>
+        <div class="actions">
+          <button id="demo-submit" type="submit" class="primary">Submit practice form</button>
+          <button type="reset">Reset form fields</button>
+        </div>
+        <p class="hint">Submitting reloads this practice page with field values in the URL. Do not enter sensitive data. Reset clears the input and notes, not the editable region.</p>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

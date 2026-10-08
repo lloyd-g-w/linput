@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Linput",
+  "version": "0.3.0",
+  "minimum_chrome_version": "123",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0vvlKK6xs7bPEYYuKREPAA+KYT16z/q4twgTj4WtH+6X5oYVDl5jD8U99GfD2NbQgAhkkM3aj1DldCaaSAxRVzpvhK2nnv3+ZLn9yxkVLqqDpXxutTdG/P9JC2mLa/QzfY6f+ytEOPe69Y/73J1KhmhDRTAO7P8+KVoUz/9Y7NGPdJYBAgOeonTD9177ts3jnYtEughhdGIUqds6nn5gYkRA6dMIT0al6uUVmHgdv/VRAFqRY6f6RJMZA9P/w+lUxAH/EwtTAyp3T7ORLJz8KsffUJDNS0hogLvMx2Eq9a1iMhKs54Hkd1C3jN6DzbRMW5Ilwl2O7bSrtZ7W1kDXYQIDAQAB",
+  "description": "Run reusable item-loop workflows on page inputs.",
+  "permissions": ["storage", "contextMenus"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["fengari.js", "content.js"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "Linput workflows"
+  }
+}

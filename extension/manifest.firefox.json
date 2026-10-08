@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Linput",
+  "version": "0.3.0",
+  "description": "Run reusable item-loop workflows on page inputs.",
+  "permissions": ["storage", "contextMenus"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["fengari.js", "content.js"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "Linput workflows"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "linput@local.example",
+      "strict_min_version": "121.0"
+    }
+  }
+}

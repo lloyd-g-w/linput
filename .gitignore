@@ -34,3 +34,8 @@ setup.log
 
 # Local OPAM switch
 _opam/
+
+# Browser bundles and development dependencies
+dist/
+node_modules/
+screenshots/

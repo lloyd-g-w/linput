@@ -1,0 +1,21 @@
+(library
+ (name workflow)
+ (wrapped false)
+ (modules workflow))
+
+(library
+ (name web)
+ (wrapped false)
+ (modules web lua_runtime)
+ (libraries js_of_ocaml workflow))
+
+(executables
+ (names background content options)
+ (modules background content options)
+ (modes js)
+ (libraries web workflow js_of_ocaml))
+
+(test
+ (name workflow_test)
+ (modules workflow_test)
+ (libraries workflow))

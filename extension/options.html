@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linput — Workflow studio</title>
+  <link rel="stylesheet" href="options.css">
+  <script src="editor.js" defer></script>
+  <script src="fengari.js" defer></script>
+  <script src="options.js" defer></script>
+</head>
+<body class="workspace-page">
+  <header class="workspace-header">
+    <a class="brand" href="options.html" aria-label="Linput workflow studio">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m8 6-5 6 5 6M16 6l5 6-5 6M14 4l-4 16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span>Linput<span class="brand-caption">Workflow studio</span></span>
+    </a>
+    <span class="header-context">Lua workflows for your browser</span>
+    <button id="stop" type="button" class="danger stop-button"><svg aria-hidden="true" viewBox="0 0 16 16" fill="none"><rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>Stop all runs</button>
+  </header>
+  <div class="workspace">
+    <aside class="workflow-sidebar" aria-labelledby="library-title">
+      <div class="section-heading"><h2 id="library-title">Workflows</h2><span id="workflow-count" class="count">0 saved</span></div>
+      <button id="new" type="button" class="new-button"><span aria-hidden="true">＋</span> New workflow</button>
+      <label for="workflows" class="small-label">Saved library</label>
+      <select id="workflows" aria-describedby="workflow-help"></select>
+      <p id="workflow-help" class="hint">Choose a workflow to edit, or start with a fresh script.</p>
+      <details id="library-disclosure" class="library-disclosure" open>
+      <summary>Library tools &amp; sync</summary>
+      <div class="sidebar-tools">
+        <button id="export" type="button">Export workflows</button>
+        <div class="file-field"><label for="import">Import workflows</label><input id="import" type="file" accept=".json,application/json"></div>
+        <button id="delete" type="button" class="danger">Delete workflow</button>
+      </div>
+      <div class="sidebar-note"><span class="sync-dot" aria-hidden="true"></span><strong>Your browser, in sync</strong><p>Browser-account sync, when enabled. Keep scripts small: approximately 7 KB per workflow. Sync stays within Chrome or Firefox, not across browser families.</p></div>
+      </details>
+      <a class="practice-link" href="demo.html">Open practice page <span aria-hidden="true">↗</span></a>
+    </aside>
+    <main class="editor-workspace" aria-labelledby="editor-title">
+      <div class="main-heading"><div><h1 id="editor-title">New workflow</h1></div><span id="editor-state" class="draft-state">Unsaved draft</span></div>
+      <p class="workflow-description">Right-click any field on a page to run your saved workflow.</p>
+      <div class="name-toolbar"><div class="name-field"><label for="name">Workflow name</label><input id="name" type="text" autocomplete="off" placeholder="e.g. Add a list of labels"></div><button id="save" type="button" class="primary">Save workflow <kbd>Ctrl+S</kbd></button></div>
+      <section class="editor-shell" aria-label="Lua script editor">
+        <div class="editor-toolbar"><label for="script"><span class="lua-dot" aria-hidden="true"></span>workflow.lua</label><button id="validate" type="button">Check syntax <span aria-hidden="true">✓</span></button></div>
+        <div class="code-area"><textarea id="script" rows="18" spellcheck="false" aria-describedby="script-help" aria-label="Lua workflow script">local items = {"apple", "banana"}
+for _, item in ipairs(items) do
+  linput.type(item)
+  linput.enter()
+  linput.delay(250)
+end</textarea><div id="code-editor" aria-label="Lua workflow script"></div></div>
+        <footer class="editor-footer"><span id="cursor-position">Ln 1, Col 1</span><span id="script-size">0 bytes</span><span class="language-label">Lua <span aria-hidden="true">•</span> UTF-8</span></footer>
+      </section>
+      <p id="script-help" class="editor-tip">Type <code>linput.</code> or press <kbd>Ctrl+Space</kbd> for completions. <kbd>Cmd/Ctrl+Enter</kbd> checks syntax; errors appear in the editor. Save with <kbd>Cmd/Ctrl+S</kbd>.</p>
+      <div class="workspace-status"><span class="status-label">Status</span><p id="status" role="status" aria-live="polite" aria-atomic="true"></p></div>
+      <p class="main-footnote">Your script runs once. Use Lua loops to repeat actions.</p>
+    </main>
+    <aside class="utility-panel" aria-label="Workflow utilities">
+      <div class="utility-heading"><h2>Tools</h2></div>
+      <details class="utility-section" open>
+        <summary><span>List builder</span><span id="list-count" class="count">0 items</span></summary>
+        <div class="details-content">
+          <p class="hint">Turn a plain-text list into a Lua table.</p>
+          <label for="items">Your items</label><textarea id="items" rows="5" spellcheck="false" placeholder="apple&#10;banana&#10;cherry" aria-describedby="items-help"></textarea>
+          <p class="hint" id="items-help">Separate with spaces, tabs or newlines. Duplicates are kept; strings are safely escaped.</p>
+          <button id="convert" type="button" class="convert-button">Convert to Lua list <span aria-hidden="true">↓</span></button>
+          <label for="converted" class="converter-output">Lua table <span class="label-meta">read-only</span></label><textarea id="converted" rows="4" spellcheck="false" readonly placeholder="{&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;}" aria-describedby="converted-help"></textarea>
+          <button id="insert-list" type="button" class="insert-button">Insert into script <span aria-hidden="true">↖</span></button>
+          <p class="hint" id="converted-help">Inserts at the caret or replaces selected code. Review your script, then save.</p>
+        </div>
+      </details>
+      <details class="utility-section">
+        <summary><span>API reference</span><span class="summary-meta">11 helpers</span></summary>
+        <div class="details-content"><p class="hint">Actions use the right-clicked target until focus, tab or click changes it. Selectors are CSS strings.</p>
+          <dl class="api-reference">
+            <dt><code>linput.type(text)</code></dt><dd>Replace the target’s contents.</dd>
+            <dt><code>linput.enter()</code></dt><dd>Send a synthetic Enter key.</dd>
+            <dt><code>linput.tab()</code></dt><dd>Move focus to the next target.</dd>
+            <dt><code>linput.click(selector)</code></dt><dd>Click an element; update the target if an editable field receives focus.</dd>
+            <dt><code>linput.submit()</code></dt><dd>Explicitly submit a form.</dd>
+            <dt><code>linput.delay(ms)</code></dt><dd>Wait 0–60000 milliseconds.</dd>
+            <dt><code>linput.focus(selector)</code></dt><dd>Focus an editable element and update the target.</dd>
+            <dt><code>linput.value()</code></dt><dd>Return the target’s contents.</dd>
+            <dt><code>linput.exists(selector)</code></dt><dd>Check for a matching element.</dd>
+            <dt><code>linput.log(text)</code></dt><dd>Report a message in run status.</dd>
+            <dt><code>linput.split(text)</code></dt><dd>Split whitespace-separated text into a table.</dd>
+          </dl>
+        </div>
+      </details>
+      <details class="utility-section sandbox-section">
+        <summary><span>Runtime &amp; safety</span></summary>
+        <div class="details-content"><p>Lua 5.3-like Fengari sandbox: no JavaScript access, <code>require</code>, <code>io</code>, <code>os</code>, <code>debug</code> or direct network API. Use concatenation and <code>tostring</code> instead of <code>string.format</code>.</p><p>Runs allow 5 million VM instructions, 10,000 API calls and 5 minutes. Memory limits are not guaranteed; native calls may not be interruptible. Only run scripts you trust.</p><p>No trusted keypresses: synthetic Enter is not accepted by every site. <code>submit()</code> can submit a real form; test on the practice page first.</p><p>Cancel with Escape, the run status, or Stop all runs. Stop active runs before changing targets.</p></div>
+      </details>
+      <p class="utility-footnote">Build once. Run from the context menu.</p>
+    </aside>
+  </div>
+</body>
+</html>
