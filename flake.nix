@@ -119,12 +119,22 @@
           };
         };
         chromeZip =
-          pkgs.runCommand "linput-chrome-zip-${extension.version}" { nativeBuildInputs = [ pkgs.zip ]; }
+          pkgs.runCommand "linput-chrome-zip-${extension.version}"
+            {
+              nativeBuildInputs = [
+                pkgs.zip
+                pkgs.jq
+              ];
+            }
             ''
               export LC_ALL=C TZ=UTC
               mkdir -p "$out"
               cp -r ${extension}/chrome staging
               cd staging
+              chmod u+w .
+              # The Web Store rejects the unpacked development build's key.
+              jq 'del(.key)' manifest.json > manifest-store.json
+              mv manifest-store.json manifest.json
               find . -type d -exec chmod 755 {} +
               find . -type f -exec chmod 644 {} +
               # ZIP's DOS timestamp starts in 1980; normalize permissions, order and

@@ -11,13 +11,17 @@ with zipfile.ZipFile(archive) as z:
     assert z.testzip() is None, "ZIP CRC check failed"
     assert z.namelist() == expected, "ZIP must contain exactly the sorted Chrome bundle at its root"
     manifest = json.loads(z.read("manifest.json"))
-    assert manifest == json.loads((bundle / "manifest.json").read_text())
+    unpacked_manifest = json.loads((bundle / "manifest.json").read_text())
+    assert unpacked_manifest.pop("key"), "Unpacked Chrome build must retain its stable ID"
+    assert "key" not in manifest, "Web Store rejects the development key"
+    assert manifest == unpacked_manifest, "Only the development key should be removed"
     assert "browser_specific_settings" not in manifest, "Firefox manifest in Chrome ZIP"
     for info in z.infolist():
         assert info.date_time == (1980, 1, 1, 0, 0, 0), "Non-normalized ZIP timestamp"
         assert not info.extra, "Host-specific ZIP extra fields"
         assert stat.S_IMODE(info.external_attr >> 16) == 0o644, "Non-normalized ZIP mode"
-        assert z.read(info) == (bundle / info.filename).read_bytes(), info.filename
+        if info.filename != "manifest.json":
+            assert z.read(info) == (bundle / info.filename).read_bytes(), info.filename
     for file in manifest["icons"].values():
         assert file in z.namelist(), f"Missing icon: {file}"
 print("Chrome Web Store ZIP root, contents, icons and reproducible metadata verified.")

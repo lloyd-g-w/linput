@@ -30,7 +30,7 @@ nix build .#chrome-zip -o result-chrome-zip
 # Upload result-chrome-zip/linput-chrome.zip in the Web Store developer dashboard.
 ```
 
-The ZIP contains the Chrome bundle with `manifest.json` at its root, including 16/32/48/128px extension and toolbar icons. File order, timestamps and permissions are normalized for reproducibility; `nix flake check` verifies archive contents and metadata. The 128px listing icon is also available at `result/chrome/icons/icon-128.png` after `nix build`. Store screenshots, promotional artwork and privacy disclosures still need to be supplied separately.
+The ZIP contains the Chrome bundle with `manifest.json` at its root, including 16/32/48/128px extension and toolbar icons. Packaging removes the manifest's development-only `key` field, which the Web Store rejects; unpacked builds keep it to preserve their local extension ID. File order, timestamps and permissions are normalized for reproducibility; `nix flake check` verifies archive contents and metadata. The 128px listing icon is also available at `result/chrome/icons/icon-128.png` after `nix build`. Store screenshots, promotional artwork and privacy disclosures still need to be supplied separately.
 
 The icon's editable source is `extension/icons/linput.svg`. Regenerate its checked-in PNGs with `nix develop --command bash scripts/generate-icons.sh`.
 
